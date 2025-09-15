@@ -18,21 +18,66 @@ db.init_app(app)
 def index():
     return '<h1>Bakery GET API</h1>'
 
+
 @app.route('/bakeries')
 def bakeries():
-    return ''
 
+    bakeries = [b.to_dict() for b in Bakery.query.all()]
+    response = make_response(
+        bakeries,
+        200
+    )
+    return response
+
+# GET /bakeries/<int:id>
 @app.route('/bakeries/<int:id>')
 def bakery_by_id(id):
-    return ''
+    bakery = Bakery.query.filter(Bakery.id == id).first()
 
+    if bakery:
+        bakery_dict = bakery.to_dict(rules=('-baked_goods.bakery',))
+        response = make_response(
+            bakery_dict,
+            200
+        )
+    else:
+        response = make_response(
+            {"error": "Bakery not found"},
+            404
+        )
+
+    return response
+
+# GET /baked_goods/by_price
 @app.route('/baked_goods/by_price')
 def baked_goods_by_price():
-    return ''
+    baked_goods = BakedGood.query.order_by(BakedGood.price.desc()).all()
+    baked_goods_list = [bg.to_dict() for bg in baked_goods]
 
+    response = make_response(
+        baked_goods_list,
+        200
+    )
+    return response
+
+# GET /baked_goods/most_expensive
 @app.route('/baked_goods/most_expensive')
 def most_expensive_baked_good():
-    return ''
+    baked_good = BakedGood.query.order_by(BakedGood.price.desc()).first()
+
+    if baked_good:
+        baked_good_dict = baked_good.to_dict()
+        response = make_response(
+            baked_good_dict,
+            200
+        )
+    else:
+        response = make_response(
+            {"error": "No baked goods found"},
+            404
+        )
+
+    return response
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
